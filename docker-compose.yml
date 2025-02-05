@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  prestashop:
+    image: prestashop/prestashop:latest
+    container_name: prestashop
+    platform: linux/amd64 # Forcer l'architecture amd64
+    ports:
+      - "8080:80"
+    environment:
+      PS_DEV_MODE: 1
+      PS_INSTALL_AUTO: 1
+      DB_SERVER: db
+      DB_USER: root
+      DB_PASSWD: example
+      DB_NAME: prestashop
+      APACHE_SERVER_NAME: localhost # Nom d'hôte pour ServerName
+    volumes:
+      - prestashop_data:/var/www/html
+    depends_on:
+      - db
+    restart: always
+    command: >
+      bash -c "echo 'ServerName ${APACHE_SERVER_NAME:-localhost}' >> /etc/apache2/apache2.conf &&
+               apache2-foreground"
+
+  db:
+    image: mysql:5.7
+    container_name: prestashop_db
+    platform: linux/amd64 # Forcer l'architecture amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: prestashop
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+volumes:
+  prestashop_data:
+  db_data:
